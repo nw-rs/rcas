@@ -3,6 +3,7 @@
 mod expression;
 mod parser;
 mod token;
+mod ast;
 
 pub use expression::{Approx, Expression};
 pub use parser::approx as parse_approximation;
