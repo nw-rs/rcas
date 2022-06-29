@@ -100,7 +100,33 @@ impl Mul for Number {
                 Self::Int(lhn) => Self::Int(lhn * rhs.as_int().unwrap()),
             }
         } else {
-            todo!()
+            if let Self::Float(lhn) = self {
+                if let Self::Int(rhn) = rhs {
+                    Self::Float(rhn as f32 * lhn)
+                } else {
+                    let (rhn, rhd) = rhs.as_frac_components().unwrap();
+                    Self::Float(f32::from(rhn) / f32::from(rhd) * lhn)
+                }
+            } else if let Self::Int(lhn) = self {
+                if let Self::Float(rhn) = rhs {
+                    Self::Float(lhn as f32 * rhn)
+                } else {
+                    let (rhn, rhd) = rhs.as_frac_components().unwrap();
+                    let mut res = (rhn as i32) * lhn;
+                    if res % (rhd as i32) == 0 {
+                        res /= rhd;
+                    }
+                    Self::Frac(rhn * lhn, rhd).simplify()
+                }
+            } else {
+                let (lhn, lhd) = self.as_frac_components().unwrap();
+                if let Self::Int(rhn) = rhs {
+                    Self::Float(f32::from(lhn) / f32::from(lhd) + rhn as f32)
+                } else {
+                    let rhn = rhs.as_float().unwrap();
+                    Self::Float(f32::from(lhn) / f32::from(lhd) + rhn)
+                }
+            }
         }
     }
 }
@@ -250,7 +276,7 @@ impl<'a> Expr<'a> {
 
 fn test<'a>() -> Expr<'a> {
     let thing = Expr::Mult(
-        &Expr::Pow(&Expr::Var('x'), &Expr::Const(Number::Int(2))),
+        &Expr::Pow(&Expr::Const(Number::Int(2)), &Expr::Const(Number::Int(8))),
         &Expr::Add(&Expr::Const(Number::Frac(1, 10)), &Expr::Var('x')),
     );
     return thing;
